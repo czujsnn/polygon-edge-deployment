@@ -1,0 +1,380 @@
+
+# NODE 1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polygon-edge-node-1
+  labels:
+    app: polygon-edge-node-1
+  namespace: polygon-edge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: polygon-edge-node-1
+  template:
+    metadata:
+      labels:
+        app: polygon-edge-node-1
+    spec:
+      containers:
+      - name: polygon-edge-node-1
+        image: czujsnn/polygon-edge:latest
+        resources:
+          limits:
+            memory: 350Mi
+            cpu: 600m
+          requests:
+            memory: 250Mi
+            cpu: 450m
+        volumeMounts:
+        - name: genesis-pvc
+          mountPath: /genesis
+        - name: node-pvc-1
+          mountPath: /data-dir
+        - name: public-node-info
+          mountPath: /public-node
+      initContainers:
+        - name: init-nodes-polygon-edge
+          image: czujsnn/init-nodes:latest
+          command: ["sh", "-c", "./test.sh"]
+      volumes:
+        - name: genesis-pvc
+          persistentVolumeClaim:
+            claimName: genesis-pvc
+        - name: node-pvc-1
+          persistentVolumeClaim:
+            claimName: node-pvc-1
+        - name: public-node-info
+          persistentVolumeClaim:
+            claimName: public-node-info
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node-pvc-1
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: azurefile-csi
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: genesis-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: default
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: public-node-info
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: default
+  resources:
+    requests:
+      storage: 1Gi
+
+        
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: polygon-edge-node-1
+  namespace: polygon-edge
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+spec:
+  selector:
+    app: polygon-edge-node-1
+  ports:
+  - name: libp2p
+    port: 1478
+    targetPort: 1478
+  - name: jsonrpc
+    port: 10001
+    targetPort: 10001
+  - name: grpc
+    port: 9632
+    targetPort: 9632
+
+  type: LoadBalancer
+  loadBalancerIP: 172.17.0.120
+
+#NODE 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polygon-edge-node-2
+  labels:
+    app: polygon-edge-node-2
+  namespace: polygon-edge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: polygon-edge-node-2
+  template:
+    metadata:
+      labels:
+        app: polygon-edge-node-2
+    spec:
+      containers:
+      - name: polygon-edge-node-2
+        image: czujsnn/polygon-edge:latest
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 350Mi
+            cpu: 600m
+          requests:
+            memory: 250Mi
+            cpu: 450m
+        volumeMounts:
+        - name: genesis-pvc
+          mountPath: /genesis
+        - name: node-pvc-2
+          mountPath: /data-dir
+        - name: public-node-info
+          mountPath: public-node
+      initContainers:
+        - name: init-nodes-polygon-edge
+          image: czujsnn/init-nodes:latest
+          command: ["sh", "-c", "./nodes.sh"]
+      volumes:
+        - name: genesis-pvc
+          persistentVolumeClaim:
+            claimName: genesis-pvc
+        - name: node-pvc-2
+          persistentVolumeClaim:
+            claimName: node-pvc-2
+        - name: public-node-info
+          persistentVolumeClaim:
+            claimName: public-node-info
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node-pvc-2
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: azurefile-csi
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: polygon-edge-node-2
+  namespace: polygon-edge
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+spec:
+  selector:
+    app: polygon-edge-node-2
+  ports:
+  - name: libp2p
+    port: 1478
+    targetPort: 1478
+  - name: jsonrpc
+    port: 10001
+    targetPort: 10001
+  - name: grpc
+    port: 9632
+    targetPort: 9632
+
+  type: LoadBalancer
+  loadBalancerIP: 172.17.0.121
+
+#NODE 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polygon-edge-node-3
+  labels:
+    app: polygon-edge-node-3
+  namespace: polygon-edge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: polygon-edge-node-3
+  template:
+    metadata:
+      labels:
+        app: polygon-edge-node-3
+    spec:
+      containers:
+      - name: polygon-edge-node-3
+        image: czujsnn/polygon-edge:latest
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 350Mi
+            cpu: 600m
+          requests:
+            memory: 250Mi
+            cpu: 450m
+        volumeMounts:
+        - name: genesis-pvc
+          mountPath: /genesis
+        - name: node-pvc-3
+          mountPath: /data-dir
+        - name: public-node-info
+          mountPath: public-node
+      initContainers:
+        - name: init-nodes-polygon-edge
+          image: czujsnn/init-nodes:latest
+          command: ["sh", "-c", "./nodes.sh"]
+      volumes:
+        - name: genesis-pvc
+          persistentVolumeClaim:
+            claimName: genesis-pvc
+        - name: node-pvc-3
+          persistentVolumeClaim:
+            claimName: node-pvc-3
+        - name: public-node-info
+          persistentVolumeClaim:
+            claimName: public-node-info
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node-pvc-3
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: azurefile-csi
+  resources:
+    requests:
+      storage: 1Gi
+       
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: polygon-edge-node-3
+  namespace: polygon-edge
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+spec:
+  selector:
+    app: polygon-edge-node-3
+  ports:
+  - name: libp2p
+    port: 1478
+    targetPort: 1478
+  - name: jsonrpc
+    port: 10001
+    targetPort: 10001
+  - name: grpc
+    port: 9632
+    targetPort: 9632
+
+  type: LoadBalancer
+  loadBalancerIP: 172.17.0.122
+
+#NODE 4
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polygon-edge-node-4
+  labels:
+    app: polygon-edge-node-4
+  namespace: polygon-edge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: polygon-edge-node-4
+  template:
+    metadata:
+      labels:
+        app: polygon-edge-node-4
+    spec:
+      containers:
+      - name: polygon-edge-node-4
+        image: czujsnn/polygon-edge:latest
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 350Mi
+            cpu: 600m
+          requests:
+            memory: 250Mi
+            cpu: 450m
+        volumeMounts:
+        - name: genesis-pvc
+          mountPath: /genesis
+        - name: node-pvc-4
+          mountPath: /data-dir
+        - name: public-node-info
+          mountPath: public-node
+      initContainers:
+        - name: init-nodes-polygon-edge
+          image: czujsnn/init-nodes:latest
+          command: ["sh", "-c", "./nodes.sh"]
+      volumes:
+        - name: genesis-pvc
+          persistentVolumeClaim:
+            claimName: genesis-pvc
+        - name: node-pvc-4
+          persistentVolumeClaim:
+            claimName: node-pvc-4
+        - name: public-node-info
+          persistentVolumeClaim:
+            claimName: public-node-info
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node-pvc-4
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: azurefile-csi
+  resources:
+    requests:
+      storage: 1Gi
+        
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: polygon-edge-node-4
+  namespace: polygon-edge
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+spec:
+  selector:
+    app: polygon-edge-node-4
+  ports:
+  - name: libp2p
+    port: 1478
+    targetPort: 1478
+  - name: jsonrpc
+    port: 10001
+    targetPort: 10001
+  - name: grpc
+    port: 9632
+    targetPort: 9632
+  type: LoadBalancer
+  loadBalancerIP: 172.17.0.123

@@ -1,0 +1,5 @@
+FROM alpine:latest
+WORKDIR /
+RUN mkdir genesis
+COPY ./test.sh .
+CMD ["sh", "-c", "./test.sh"]
