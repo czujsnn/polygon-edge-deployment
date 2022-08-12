@@ -7,4 +7,4 @@ WORKDIR /
 COPY ./launch.sh .
 RUN chmod +rx ./launch.sh
 
-CMD ["sh", "-c", "./launch.sh"]
+# CMD ["sh", "-c", "./launch.sh"]

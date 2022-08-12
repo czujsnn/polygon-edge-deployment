@@ -20,6 +20,8 @@ spec:
       containers:
       - name: polygon-edge-node-1
         image: czujsnn/polygon-edge:latest
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]
         resources:
           limits:
             memory: 350Mi
@@ -35,10 +37,27 @@ spec:
         - name: public-node-info
           mountPath: /public-node
       initContainers:
-        - name: init-nodes-polygon-edge
+        - name: wait-for-pvc-creation
+          image: busybox:1.28
+          command: ['sh', '-c', 'sleep 30']
+        - name: init-myservice
           image: czujsnn/init-nodes:latest
-          command: ["sh", "-c", "./test.sh"]
+          volumeMounts:
+          - name: genesis-pvc
+            mountPath: /genesis
+          - name: node-pvc-1
+            mountPath: /data-dir
+          - name: public-node-info
+            mountPath: /public-node
+          - name: podinfo
+            mountPath: /etc/podinfo
       volumes:
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
         - name: genesis-pvc
           persistentVolumeClaim:
             claimName: genesis-pvc
@@ -68,8 +87,8 @@ metadata:
   name: genesis-pvc
 spec:
   accessModes:
-  - ReadWriteOnce
-  storageClassName: default
+  - ReadWriteMany
+  storageClassName: azurefile-csi
   resources:
     requests:
       storage: 1Gi
@@ -80,8 +99,8 @@ metadata:
   name: public-node-info
 spec:
   accessModes:
-  - ReadWriteOnce
-  storageClassName: default
+  - ReadWriteMany
+  storageClassName: azurefile-csi
   resources:
     requests:
       storage: 1Gi
@@ -112,7 +131,7 @@ spec:
   type: LoadBalancer
   loadBalancerIP: 172.17.0.120
 
-#NODE 2
+# NODE 2
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -134,6 +153,8 @@ spec:
       containers:
       - name: polygon-edge-node-2
         image: czujsnn/polygon-edge:latest
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]
         imagePullPolicy: Always
         resources:
           limits:
@@ -150,10 +171,27 @@ spec:
         - name: public-node-info
           mountPath: public-node
       initContainers:
-        - name: init-nodes-polygon-edge
+        - name: wait-for-pvc-creation
+          image: busybox:1.28
+          command: ['sh', '-c', 'sleep 30']
+        - name: init-myservice
           image: czujsnn/init-nodes:latest
-          command: ["sh", "-c", "./nodes.sh"]
+          volumeMounts:
+          - name: genesis-pvc
+            mountPath: /genesis
+          - name: node-pvc-2
+            mountPath: /data-dir
+          - name: public-node-info
+            mountPath: /public-node
+          - name: podinfo
+            mountPath: /etc/podinfo
       volumes:
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
         - name: genesis-pvc
           persistentVolumeClaim:
             claimName: genesis-pvc
@@ -223,6 +261,8 @@ spec:
       containers:
       - name: polygon-edge-node-3
         image: czujsnn/polygon-edge:latest
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]
         imagePullPolicy: Always
         resources:
           limits:
@@ -239,10 +279,27 @@ spec:
         - name: public-node-info
           mountPath: public-node
       initContainers:
-        - name: init-nodes-polygon-edge
+        - name: wait-for-pvc-creation
+          image: busybox:1.28
+          command: ['sh', '-c', 'sleep 30']
+        - name: init-myservice
           image: czujsnn/init-nodes:latest
-          command: ["sh", "-c", "./nodes.sh"]
+          volumeMounts:
+          - name: genesis-pvc
+            mountPath: /genesis
+          - name: node-pvc-3
+            mountPath: /data-dir
+          - name: public-node-info
+            mountPath: /public-node
+          - name: podinfo
+            mountPath: /etc/podinfo
       volumes:
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
         - name: genesis-pvc
           persistentVolumeClaim:
             claimName: genesis-pvc
@@ -313,6 +370,8 @@ spec:
       containers:
       - name: polygon-edge-node-4
         image: czujsnn/polygon-edge:latest
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]
         imagePullPolicy: Always
         resources:
           limits:
@@ -329,10 +388,27 @@ spec:
         - name: public-node-info
           mountPath: public-node
       initContainers:
-        - name: init-nodes-polygon-edge
+        - name: wait-for-pvc-creation
+          image: busybox:1.28
+          command: ['sh', '-c', 'sleep 30']
+        - name: init-myservice
           image: czujsnn/init-nodes:latest
-          command: ["sh", "-c", "./nodes.sh"]
+          volumeMounts:
+          - name: genesis-pvc
+            mountPath: /genesis
+          - name: node-pvc-4
+            mountPath: /data-dir
+          - name: public-node-info
+            mountPath: /public-node
+          - name: podinfo
+            mountPath: /etc/podinfo
       volumes:
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
         - name: genesis-pvc
           persistentVolumeClaim:
             claimName: genesis-pvc

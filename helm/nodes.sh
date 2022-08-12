@@ -1,10 +1,17 @@
 #!/bin/bash
+ID=$(cat /etc/podinfo/labels |awk -F"=" '{split($2,a," ");gsub(/"/, "", a[1]);print a[1]}' | head -n 1)
+if compgen -G "/public-node/*${ID}.txt" > /dev/null; then
+   echo "Already exists."
+else
+    polygon-edge secrets init --data-dir /data-dir > ./output.txt
+    cat output.txt | grep Public | awk '{ printf "%s", $5}' > /public-node/public_key_node-$ID.txt
+    cat output.txt | grep Node | awk '{ printf "%s", $4}' > /public-node/node_id_node-$ID.txt
 
-polygon-edge secrets init --data-dir data-dir > output.txt
-cat output.txt | grep Public | awk '{ printf "%s", $5}' > public-node/public_key_node-$HOSTNAME.txt
-cat output.txt | grep Node | awk '{ printf "%s", $4}' > public-node/node_id_node-$HOSTNAME.txt
+    rm ./output.txt 
+fi
 
-rm output.txt 
+
+
 
 # sleep 45
 

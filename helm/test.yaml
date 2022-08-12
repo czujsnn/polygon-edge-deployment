@@ -17,8 +17,9 @@ spec:
     spec:
       containers:
       - name: polygon-edge-node-1
-        image: ubuntu:latest
-        command: ["-f","/dev/null"]
+        image: czujsnn/polygon-edge:latest
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]
         resources:
           limits:
             memory: 350Mi
@@ -26,64 +27,80 @@ spec:
           requests:
             memory: 250Mi
             cpu: 450m
-        # volumeMounts:
-        # - name: genesis-pvc
-        #   mountPath: /genesis
-        # - name: node-pvc-1
-        #   mountPath: /data-dir
-        # - name: public-node-info
-        #   mountPath: /public-node
-      # initContainers:
-      #   - name: init-myservice
-      #     image: busybox:1.28
-      #     command: ['sh', '-c', echo TEST > node_id.txt]
-      # volumes:
-      #   - name: genesis-pvc
-      #     persistentVolumeClaim:
-      #       claimName: genesis-pvc
-      #   - name: node-pvc-1
-      #     persistentVolumeClaim:
-      #       claimName: node-pvc-1
-      #   - name: public-node-info
-      #     persistentVolumeClaim:
-      #       claimName: public-node-info
+        volumeMounts:
+        - name: genesis-pvc
+          mountPath: /genesis
+        - name: node-pvc-1
+          mountPath: /data-dir
+        - name: public-node-info
+          mountPath: /public-node
+        - name: podinfo
+          mountPath: /etc/podinfo
+      initContainers:
+        - name: init-myservice
+          image: czujsnn/init-nodes:latest
+          volumeMounts:
+          - name: genesis-pvc
+            mountPath: /genesis
+          - name: node-pvc-1
+            mountPath: /data-dir
+          - name: public-node-info
+            mountPath: /public-node
+          - name: podinfo
+            mountPath: /etc/podinfo
+      volumes:
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
+        - name: genesis-pvc
+          persistentVolumeClaim:
+            claimName: genesis-pvc
+        - name: node-pvc-1
+          persistentVolumeClaim:
+            claimName: node-pvc-1
+        - name: public-node-info
+          persistentVolumeClaim:
+            claimName: public-node-info
 
-# ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: node-pvc-1
-# spec:
-#   accessModes:
-#   - ReadWriteMany
-#   storageClassName: azurefile-csi
-#   resources:
-#     requests:
-#       storage: 1Gi
-# ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: genesis-pvc
-# spec:
-#   accessModes:
-#   - ReadWriteOnce
-#   storageClassName: default
-#   resources:
-#     requests:
-#       storage: 1Gi
-# ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: public-node-info
-# spec:
-#   accessModes:
-#   - ReadWriteOnce
-#   storageClassName: default
-#   resources:
-#     requests:
-#       storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node-pvc-1
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: azurefile-csi
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: genesis-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: default
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: public-node-info
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: default
+  resources:
+    requests:
+      storage: 1Gi
 
         
 ---
